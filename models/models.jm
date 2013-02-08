@@ -1,9 +1,14 @@
 
 
 
-MyClassName{
+INotifyEvent{
 
-    SubClassName sub_name;
-    int count;
+
+};
+
+
+INotifyRecursiveListener{
+
+    Utf8String full_path;
 
 };

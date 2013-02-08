@@ -1,5 +1,5 @@
 cmake_minimum_required( VERSION "2.8.0" )
-set( MAIN_EXECUTABLE my_exe )
+set( MAIN_EXECUTABLE notify )
 
 project( ${MAIN_EXECUTABLE} CXX C )
 
@@ -14,7 +14,11 @@ set( EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/build )
 
 include_directories( include )
 
-add_executable( ${MAIN_EXECUTABLE} src/main.cc )
+add_executable( ${MAIN_EXECUTABLE}
+    src/main.cc
+    src/INotifyRecursiveListener.cc
+    src/INotifyEvent.cc
+)
 target_link_libraries( ${MAIN_EXECUTABLE} ${LIBS} )
 
 if( CMAKE_COMPILER_IS_GNUCXX )

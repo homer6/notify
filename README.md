@@ -1,3 +1,7 @@
+Notify
+------
+    Linux Daemon that runs a script when a file in the directory has changed (listens recursively). MIT License.
+
 
 Requirements
 ------------
@@ -9,8 +13,8 @@ Requirements
 Download and Install
 --------------------
 
-    git clone git://github.com/homer6/blank_jet.git
-    cd blank_jet
+    git clone git://github.com/homer6/notify.git
+    cd notify
     git submodule update --init --recursive
 
     cd lib/jet/
@@ -23,7 +27,7 @@ Download and Install
     cmake .
     make
 
-    sudo ln -s `pwd`/build/my_exe /usr/bin/my_exe
+    sudo ln -s `pwd`/build/notify /usr/bin/notify
 
 
 
@@ -31,7 +35,7 @@ Download and Install
 Running
 -------
 
-    jm simple.jm
+    notify script_to_run.sh existing_folder_name existing_file_name existing_folder_name2
 
 
 

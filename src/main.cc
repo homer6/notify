@@ -1,36 +1,34 @@
 
 #include <iostream>
-#include <bitset>
+#include <sys/inotify.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string>
 
-#include "jet/Utf8String.h"
-#include "jet/File.h"
+#include "jet/Directory.h"
 #include "jet/Exception.h"
+#include "jet/Utf8String.h"
+
+#include "INotifyEvent.h"
+#include "INotifyRecursiveListener.h"
+
 
 
 using namespace std;
 using namespace jet;
 
 
-template< class T >
-void print_as_binary( T value, ostream& output_stream ){
+void error( Utf8String message ){
 
-    bitset< sizeof(T) * 8 > x( value );
-
-    output_stream << x ;
+    cout << "Error: " << message << endl;
 
 }
 
 
-void show_usage(){
+void display_usage(){
 
-    cout << "Usage: my_exe <filename>" << endl;
-
-}
-
-
-void red( Utf8String text ){
-
-    cout << "\033[1;31m" << text << "\033[0m";
+    cout << "usage: notify <command-file-to-invoke> [<directory-to-listen-recursively>]" << endl;
+    cout << "Defaults to the current directory." << endl;
 
 }
 
@@ -38,86 +36,38 @@ void red( Utf8String text ){
 
 int main( int argc, char** argv ){
 
-
-    if( argc < 2 ){
-        show_usage();
-        return 1;
-    }
-
-    Utf8String *filename = NULL;
-    File *file = NULL;
-    Utf8String *contents = NULL;
-
     try{
 
-        filename = new Utf8String( argv[1] );
+        if( argc < 2 ){
+            display_usage();
+            return 1;
+        }
 
-        file = new File( *filename );
+        INotifyRecursiveListener *directory_listener = new INotifyRecursiveListener();
 
-        contents = new Utf8String;
-        *contents = file->getContents();
+        Utf8String command( argv[1] );
+        Utf8String full_path;
+        if( argc > 2 ){
+            full_path += Utf8String( argv[2] );
+        }
+        Directory directory( full_path );
 
-        cout << *contents;
+        directory_listener->setFullPath( directory.getFullPath() );
+        directory_listener->setCommand( command );
+        directory_listener->listen();
+
+        delete directory_listener;
+
+
+    }catch( Exception e ){
+
+        error( e.message );
 
     }catch( Exception *e ){
 
-        red( Utf8String("[Exception] ") );
-        cout << "- " << e->message << endl;
+        error( e->message );
 
-    }
-
-    if( contents != NULL ) delete contents;
-    if( file != NULL ) delete file;
-    if( filename != NULL ) delete filename;
-
-
-
-
-
-
-    /*
-    Utf8String my_string( "Hello", 5 );
-
-    cout << my_string << endl;
-
-
-    unsigned char current_byte = 0;
-
-    unsigned int value = 0x80 >> 7;
-
-    int shift_bytes = sizeof(unsigned int) - 1;
-
-    current_byte = value;
-
-    cout << shift_bytes << endl;
-
-    //cout << value << endl;
-
-    //cout << current_byte << endl;
-
-    cout << "Value as Binary: ";
-    print_as_binary( value, cout );
-    cout << endl;
-
-    cout << "Current Byte as Binary: ";
-    print_as_binary( current_byte, cout );
-    cout << endl;
-
-    cout << "Shift Bytes as Binary: ";
-    print_as_binary( shift_bytes, cout );
-    cout << endl;
-
-    cout << "Literal as Binary: ";
-    print_as_binary( 0x01, cout );
-    cout << endl;
-
-    //print_as_binary( my_string, cout );
-
-    */
-
-
-
-
+    };
 
     return 0;
 
