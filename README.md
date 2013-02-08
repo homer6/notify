@@ -35,7 +35,7 @@ Download and Install
 Running
 -------
 
-    notify script_to_run.sh existing_folder_name existing_file_name existing_folder_name2
+    notify examples/python/skeleton.py listen_test/
 
 
 
