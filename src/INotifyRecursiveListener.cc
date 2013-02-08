@@ -1,5 +1,6 @@
 #include "INotifyRecursiveListener.h"
 
+#include <stdlib.h>
 
 
 INotifyRecursiveListener::INotifyRecursiveListener()
@@ -76,8 +77,6 @@ void INotifyRecursiveListener::listen(){
         throw Exception( "inotify_init()" );
     }
 
-    cout << "About to watch: " << this->full_path << endl;
-
 
     if( (watch_descriptor = inotify_add_watch( inotify_instance, this->full_path.getCString(), IN_ALL_EVENTS)) == -1 ){
         free( event_read_buffer );
@@ -85,9 +84,19 @@ void INotifyRecursiveListener::listen(){
     }
     cout << "Watching: " << this->full_path << endl;
 
+    Utf8String command_with_arguments;
+
+    uint32_t listening_mask =
+            IN_MODIFY |         // File was modified (*).
+            IN_DELETE |         // File/directory deleted from watched directory (*).
+            IN_MOVED_TO |       // File moved into watched directory (*).
+            IN_MOVED_FROM |     // File moved out of watched directory (*).
+            IN_CREATE           // File/directory created in watched directory (*).
+    ;
 
 
     bool continue_listening = true;
+    int return_value;
 
     while( continue_listening ){
 
@@ -95,20 +104,30 @@ void INotifyRecursiveListener::listen(){
 
         if( read_result < 1 ){
             free( event_read_buffer );
-            throw Exception( "inotify_add_watch()" );
+            throw Exception( "read_result()" );
         }
 
-        cout << "Read " << read_result << " bytes from inotify fd." << endl;
+        //cout << "Read " << read_result << " bytes from inotify fd." << endl;
 
         buffer_iterator = event_read_buffer;
 
         do{
 
-            cout << "Event: ";
+            //cout << "Event: ";
 
             current_event = (INotifyEvent*) buffer_iterator;
 
-            cout << current_event->getDescription() << endl;
+            if( current_event->mask & listening_mask ){
+
+                command_with_arguments = this->command + " " + current_event->getDescription();
+
+                return_value = system( command_with_arguments.getCString() );
+
+                //print_as_hex( cout, command_with_arguments );
+
+                cout << command_with_arguments << endl;
+
+            }
 
             buffer_iterator += current_event->getSize();
 

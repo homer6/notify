@@ -11,8 +11,9 @@
 
 
 using namespace std;
+using namespace jet;
 
-class INotifyEvent : inotify_event{
+class INotifyEvent : public inotify_event{
 
     /*
     inotify_event{
@@ -32,7 +33,7 @@ class INotifyEvent : inotify_event{
         ~INotifyEvent();
 
         uint32_t getSize() const;
-        string getDescription() const;
+        Utf8String getDescription() const;
 
 
 };
