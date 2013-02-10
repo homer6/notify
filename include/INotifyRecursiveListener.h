@@ -5,12 +5,16 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include <map>
+
 #include "jet/Utf8String.h"
 #include "jet/Exception.h"
+#include "jet/Directory.h"
 
 #include "INotifyEvent.h"
 
 using namespace jet;
+using namespace std;
 
 class INotifyRecursiveListener{
 
@@ -26,10 +30,12 @@ class INotifyRecursiveListener{
         Utf8String getCommand();
 
         void listen();
+        void addListenersRecursively( int inotify_instance, const Utf8String &full_path );
 
     protected:
         Utf8String full_path;
         Utf8String command;
+        map<int, Utf8String> watch_descriptors;
 
 };
 

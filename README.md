@@ -1,6 +1,7 @@
 Notify
 ------
     Linux Daemon that runs a script when a file in the directory has changed (listens recursively). MIT License.
+    Does not follow symlinks.
 
 
 Requirements

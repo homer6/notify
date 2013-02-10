@@ -34,6 +34,7 @@ class INotifyEvent : public inotify_event{
 
         uint32_t getSize() const;
         Utf8String getDescription() const;
+        Utf8String getFilename() const;
 
 
 };

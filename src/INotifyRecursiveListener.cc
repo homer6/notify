@@ -59,7 +59,7 @@ Utf8String INotifyRecursiveListener::getCommand(){
 void INotifyRecursiveListener::listen(){
 
 
-    int inotify_instance, watch_descriptor;
+    int inotify_instance;
     ssize_t read_result;
 
     INotifyEvent* current_event;
@@ -78,13 +78,24 @@ void INotifyRecursiveListener::listen(){
     }
 
 
-    if( (watch_descriptor = inotify_add_watch( inotify_instance, this->full_path.getCString(), IN_ALL_EVENTS)) == -1 ){
+    try{
+
+        this->addListenersRecursively( inotify_instance, this->full_path );
+
+    }catch( Exception *exception ){
+
         free( event_read_buffer );
-        throw Exception( "inotify_add_watch()" );
+        throw exception;
+
+    }catch( Exception exception ){
+
+        free( event_read_buffer );
+        throw exception;
+
     }
-    cout << "Watching: " << this->full_path << endl;
 
     Utf8String command_with_arguments;
+    Utf8String full_path;
 
     uint32_t listening_mask =
             IN_MODIFY |         // File was modified (*).
@@ -93,6 +104,12 @@ void INotifyRecursiveListener::listen(){
             IN_MOVED_FROM |     // File moved out of watched directory (*).
             IN_CREATE           // File/directory created in watched directory (*).
     ;
+
+    uint32_t create_listener_mask =
+            IN_MOVED_TO |       // File moved into watched directory (*).
+            IN_CREATE           // File/directory created in watched directory (*).
+    ;
+
 
 
     bool continue_listening = true;
@@ -117,9 +134,25 @@ void INotifyRecursiveListener::listen(){
 
             current_event = (INotifyEvent*) buffer_iterator;
 
+
+            full_path = this->watch_descriptors[ current_event->wd ];
+            full_path += "/" + current_event->getFilename();
+
+
+            //Add new listeners to new directories
+            if( current_event->mask & create_listener_mask ){
+
+                if( Directory::isDirectory(full_path) ){
+                    this->addListenersRecursively( inotify_instance, full_path );
+                }
+
+            }
+
+
+            //Invoke the script if it matches the listening mask
             if( current_event->mask & listening_mask ){
 
-                command_with_arguments = this->command + " " + current_event->getDescription();
+                command_with_arguments = this->command + " " + current_event->getDescription() + " " + full_path.escapeShellArgument();
 
                 return_value = system( command_with_arguments.getCString() );
 
@@ -141,3 +174,49 @@ void INotifyRecursiveListener::listen(){
 
 
 }
+
+
+
+void INotifyRecursiveListener::addListenersRecursively( int inotify_instance, const Utf8String &full_path ){
+
+    if( Directory::isDirectory(full_path) ){
+
+        Directory dir( full_path );
+
+        if( dir.getName() == "." || dir.getName() == ".." ){
+            //skip these directories
+            return;
+        }
+
+        int watch_descriptor;
+
+        if( (watch_descriptor = inotify_add_watch(inotify_instance, full_path.getCString(), IN_ALL_EVENTS)) == -1 ){
+            throw Exception( "inotify_add_watch(): " + full_path );
+        }
+
+        this->watch_descriptors[ watch_descriptor ] = full_path;
+
+        cout << "Watching: " << full_path << endl;
+
+        vector<Directory*> *subdirectories = dir.getDirectories();
+        vector<Directory*>::iterator it;
+        Directory *current_directory;
+
+        for( it = subdirectories->begin(); it != subdirectories->end(); it++ ){
+
+            current_directory = *it;
+
+            this->addListenersRecursively( inotify_instance, current_directory->getFullPath() );
+
+        }
+
+        delete subdirectories;
+
+    }else{
+
+        throw Exception( Utf8String(full_path) + " must be a directory." );
+
+    }
+
+}
+

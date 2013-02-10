@@ -26,7 +26,6 @@ uint32_t INotifyEvent::getSize() const{
 Utf8String INotifyEvent::getDescription() const{
 
     Utf8String result;
-    Utf8String filename( this->name );
 
     if( this->mask & IN_ACCESS ) result += "IN_ACCESS-";
     if( this->mask & IN_ATTRIB ) result += "IN_ATTRIB-";
@@ -44,11 +43,19 @@ Utf8String INotifyEvent::getDescription() const{
     if( this->mask & IN_MOVE ) result += "IN_MOVE-";
     if( this->mask & IN_CLOSE ) result += "IN_CLOSE-";
 
-    result += " " + filename.escapeShellArgument();
-
     return result;
 
 }
+
+
+Utf8String INotifyEvent::getFilename() const{
+
+    Utf8String filename( this->name );
+
+    return filename;
+
+}
+
 
 
 
