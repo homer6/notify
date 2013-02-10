@@ -158,7 +158,7 @@ void INotifyRecursiveListener::listen(){
 
                 //print_as_hex( cout, command_with_arguments );
 
-                cout << command_with_arguments << endl;
+                //cout << command_with_arguments << endl;
 
             }
 
