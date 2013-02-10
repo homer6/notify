@@ -208,6 +208,8 @@ void INotifyRecursiveListener::addListenersRecursively( int inotify_instance, co
 
             this->addListenersRecursively( inotify_instance, current_directory->getFullPath() );
 
+            delete current_directory;
+
         }
 
         delete subdirectories;
