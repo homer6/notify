@@ -1,6 +1,7 @@
 #include "INotifyRecursiveListener.h"
 
 #include <stdlib.h>
+#include <unistd.h>
 
 
 INotifyRecursiveListener::INotifyRecursiveListener()
@@ -102,7 +103,8 @@ void INotifyRecursiveListener::listen(){
             IN_DELETE |         // File/directory deleted from watched directory (*).
             IN_MOVED_TO |       // File moved into watched directory (*).
             IN_MOVED_FROM |     // File moved out of watched directory (*).
-            IN_CREATE           // File/directory created in watched directory (*).
+            IN_CREATE |         // File/directory created in watched directory (*).
+            IN_CLOSE_WRITE      // File opened for writing was closed (*).
     ;
 
     uint32_t create_listener_mask =
@@ -147,6 +149,9 @@ void INotifyRecursiveListener::listen(){
                 }
 
             }
+
+            //Show all events
+            //cout << current_event->getDescription() + " " + full_path << endl;
 
 
             //Invoke the script if it matches the listening mask
@@ -199,12 +204,12 @@ void INotifyRecursiveListener::addListenersRecursively( int inotify_instance, co
         cout << "Watching: " << full_path << endl;
 
         vector<Directory*> *subdirectories = dir.getDirectories();
-        vector<Directory*>::iterator it;
+        vector<Directory*>::iterator dir_it;
         Directory *current_directory;
 
-        for( it = subdirectories->begin(); it != subdirectories->end(); it++ ){
+        for( dir_it = subdirectories->begin(); dir_it != subdirectories->end(); dir_it++ ){
 
-            current_directory = *it;
+            current_directory = *dir_it;
 
             this->addListenersRecursively( inotify_instance, current_directory->getFullPath() );
 
@@ -213,6 +218,7 @@ void INotifyRecursiveListener::addListenersRecursively( int inotify_instance, co
         }
 
         delete subdirectories;
+
 
     }else{
 
