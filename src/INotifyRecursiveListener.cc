@@ -98,7 +98,6 @@ void INotifyRecursiveListener::listen(){
     Utf8String command_with_arguments;
     Utf8String full_path;
 
-    /*
     uint32_t listening_mask =
             IN_MODIFY |         // File was modified (*).
             IN_DELETE |         // File/directory deleted from watched directory (*).
@@ -107,9 +106,6 @@ void INotifyRecursiveListener::listen(){
             IN_CREATE |         // File/directory created in watched directory (*).
             IN_CLOSE_WRITE      // File opened for writing was closed (*).
     ;
-    */
-
-    uint32_t listening_mask = IN_ALL_EVENTS;
 
     uint32_t create_listener_mask =
             IN_MOVED_TO |       // File moved into watched directory (*).
